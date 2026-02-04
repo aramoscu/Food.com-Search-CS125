@@ -37,8 +37,8 @@ class IndexFileBuffer:
             index_record_size = self.header_size + term_size + postings_size
             if len(self.buffer) < index_record_size:
                 remaining_record = index_record_size - len(self.buffer)
-                allowed_size = self.block_size - remaining_record
-                read_amount = max(allowed_size, self.block_size)
+                allowed_size = self.blocksize - remaining_record
+                read_amount = max(allowed_size, self.blocksize)
                 new_data = self.file.read(read_amount)
                 if not new_data:
                     self.end_of_file = True
@@ -46,7 +46,7 @@ class IndexFileBuffer:
                 self.buffer += new_data
                 continue
             term_in_bytes = self.buffer[self.header_size:self.header_size+term_size]
-            postings_in_bytes = self.buffer[:self.header_size+term_size:self.header_size+term_size+postings_size]
+            postings_in_bytes = self.buffer[self.header_size+term_size:self.header_size+term_size+postings_size]
             self.buffer = self.buffer[index_record_size:]
             term = term_in_bytes.decode("utf-8")
             postings = pickle.loads(postings_in_bytes)
