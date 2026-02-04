@@ -28,7 +28,7 @@ class IngredientIndexer:
     def build(self):
         recipes = pd.read_csv(self.ingredients_file, chunksize=self.chunk_size)
         num_chunks = 0
-        conn = sqlite3.connect("recipe_library.db")
+        conn = sqlite3.connect("Data/recipe_library.db")
         for i, recipe_chunk in enumerate(recipes):
             mode = "replace" if i == 0 else "append"
             recipe_chunk.to_sql("recipe_library", conn, if_exists=mode, index=False)
@@ -43,13 +43,13 @@ class IngredientIndexer:
                         index[ingredient] = []
                     index[ingredient].append(Posting(self.recipe_index_id))
             sorted_index = OrderedDict(sorted(index.items()))
-            filename = f"sorted_recipe_index_{num_chunks}.bin"
+            filename = f"Data/sorted_recipe_index_{num_chunks}.bin"
             self.file_indexes.append(filename)
             with open(filename, "wb") as file:
                 for term, postings_list in index.items():
                     self.write_data(file, term, postings_list)
             num_chunks += 1
-        with shelve.open("index_recipe_library.db") as index_library:
+        with shelve.open("Data/index_recipe_library.db") as index_library:
             index_library.update(self.index_recipe_library)
         # merge indexes
         while len(self.file_indexes) > 1:
@@ -61,13 +61,13 @@ class IngredientIndexer:
                 merged_file = self.merge_files(first_file, second_file)
             self.file_indexes.append(merged_file)
         if self.file_indexes:
-            os.rename(self.file_indexes[0], "ingredient_index.bin")
+            os.rename(self.file_indexes[0], "Data/ingredient_index.bin")
         conn.close()
     
     def merge_files(self, first_file, second_file, final_merge=False):
         index1 = IndexFileBuffer(first_file, 10^7)
         index2 = IndexFileBuffer(second_file, 10^7)
-        merged_filename =f"merged_index_temp_{len(self.file_indexes)}.bin"
+        merged_filename =f"Data/merged_index_temp_{len(self.file_indexes)}.bin"
         term_to_buffer = {}
         located = 0
         with open(merged_filename, "wb") as merged_file:
@@ -107,17 +107,17 @@ class IngredientIndexer:
                     size_written = self.write_data(merged_file, index1_term, index1_postings)
                     located += size_written
                     index1_record = index1.next()
-        with shelve.open("term_to_buffer.db") as buffer_library:
+        with shelve.open("Data/term_to_buffer.db") as buffer_library:
             buffer_library.update(term_to_buffer)
         index1.close()
         index2.close()
         # clean trash files
         try:
-            base_name_1 = first_file.rsplit('.', 1)[0]
-            base_name_2 = second_file.rsplit('.', 1)[0]
-            for f in os.listdir('.'):
+            base_name_1 = first_file.rsplit('/', 1)[-1]
+            base_name_2 = second_file.rsplit('/', 1)[-1]
+            for f in os.listdir('Data'):
                 if f.startswith(base_name_1) or f.startswith(base_name_2):
-                    os.remove(f)
+                    os.remove(f"Data/{f}")
         except OSError as e:
             print(f"Error deleting temporary index files {first_file} or {second_file}: {e}")
         return merged_filename
