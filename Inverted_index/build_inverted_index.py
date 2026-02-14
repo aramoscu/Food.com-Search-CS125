@@ -44,11 +44,11 @@ def is_sane_nutrition(vals) -> bool:
         return False
 
     # very loose bounds (keeps most real recipes)
-    if cal > 2000:        # 10k calories is already enormous
+    if cal > 2000:        #Limit for protein in a recipe
         return False
-    if protein > 140:       # 500g protein is basically impossible for a single recipe
+    if protein > 140:       #Limit for protein in a recipe
         return False
-    if sodium > 5000:    # crazy sodium value
+    if sodium > 5000:    #Limit for sodium in a recipe
         return False
 
     return True
@@ -162,7 +162,7 @@ def build():
         print(f"Chunk {chunk_i}: recipes={len(chunk):,} postings={len(postings_batch):,}")
 
     conn.close()
-    print("\n✅ Done!")
+    print("\n Done!")
     print(f"DB: {DB_PATH}")
     print(f"Total recipes inserted: {total_recipes:,}")
     print(f"Total postings inserted: {total_postings:,}")
