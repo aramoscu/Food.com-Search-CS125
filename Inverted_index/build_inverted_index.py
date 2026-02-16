@@ -69,13 +69,15 @@ def build():
             id INTEGER PRIMARY KEY,
             name TEXT,
             ingredients TEXT,
+            minutes INTEGER,
             calories REAL,
             total_fat REAL,
             sugar REAL,
             sodium REAL,
             protein REAL,
             saturated_fat REAL,
-            carbohydrates REAL
+            carbohydrates REAL,
+            avg_rating REAL
         );
     """)
 
@@ -91,10 +93,11 @@ def build():
     # Optional numeric indexes for faster filters
     cur.execute("CREATE INDEX idx_recipes_protein ON recipes(protein);")
     cur.execute("CREATE INDEX idx_recipes_calories ON recipes(calories);")
+    cur.execute("CREATE INDEX idx_recipes_rating ON recipes(avg_rating);")
 
     # Read only the columns you need.
     # NOTE: "nutrition" is read from CSV but NOT stored raw — only parsed values stored.
-    usecols = ["id", "name", "ingredients", "nutrition"]
+    usecols = ["id", "name", "ingredients", "minutes", "nutrition"]
 
     total_recipes = 0
     total_postings = 0
@@ -103,6 +106,7 @@ def build():
         chunk = chunk.dropna(subset=["id", "ingredients", "nutrition"])
         chunk["id"] = chunk["id"].astype(int)
         chunk["name"] = chunk["name"].fillna("")
+        chunk["minutes"] = chunk["minutes"].fillna(0).astype(int)
 
         # Parse nutrition -> 7 numeric cols
         parsed = chunk["nutrition"].apply(parse_nutrition)
@@ -124,11 +128,12 @@ def build():
         chunk["saturated_fat"] = [v[5] for v in vals]
         chunk["carbohydrates"] = [v[6] for v in vals]
 
-        # Insert recipes
+        # Insert recipes (avg_rating set to NULL initially, will be updated later)
         recipe_rows = list(zip(
             chunk["id"].tolist(),
             chunk["name"].tolist(),
             chunk["ingredients"].tolist(),
+            chunk["minutes"].tolist(),
             chunk["calories"].tolist(),
             chunk["total_fat"].tolist(),
             chunk["sugar"].tolist(),
@@ -140,10 +145,10 @@ def build():
 
         cur.executemany("""
             INSERT INTO recipes(
-                id, name, ingredients,
+                id, name, ingredients, minutes,
                 calories, total_fat, sugar, sodium, protein, saturated_fat, carbohydrates
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, recipe_rows)
 
         # Build postings from name + ingredients
@@ -160,6 +165,25 @@ def build():
         total_postings += len(postings_batch)
 
         print(f"Chunk {chunk_i}: recipes={len(chunk):,} postings={len(postings_batch):,}")
+
+    # Compute average ratings from RAW_interactions.csv
+    INTERACTIONS_PATH = "RAW_interactions.csv"
+    if os.path.exists(INTERACTIONS_PATH):
+        interactions_df = pd.read_csv(INTERACTIONS_PATH, usecols=["recipe_id", "rating"])
+        # Filter out 0 ratings (often means unrated)
+        interactions_df = interactions_df[interactions_df["rating"] > 0]
+        # Group by recipe_id and compute mean rating
+        avg_ratings = interactions_df.groupby("recipe_id")["rating"].mean().reset_index()
+        avg_ratings.columns = ["recipe_id", "avg_rating"]
+
+        # Update recipes table with ratings
+        rating_updates = [(float(row["avg_rating"]), int(row["recipe_id"]))
+                         for _, row in avg_ratings.iterrows()]
+        cur.executemany("UPDATE recipes SET avg_rating = ? WHERE id = ?", rating_updates)
+        conn.commit()
+        print(f"Updated ratings for {len(rating_updates):,} recipes")
+    else:
+        print(f"Warning: {INTERACTIONS_PATH} not found, skipping ratings")
 
     conn.close()
     print("\n Done!")
