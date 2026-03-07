@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect
 from Inverted_index.search_handler import search
+from User_Data.user_methods import *
 import sqlite3
 
 app = Flask(__name__)
@@ -7,11 +8,17 @@ DB_PATH = "Data/inverted_index.db"
 
 @app.route('/login', methods=["GET", "POST"])
 def login():
+    error = None
     if request.method == "POST":
         user = request.form.get("username")
+        password = request.form.get("password")
+        valid = check_user_login(user, password)
         print(f"User {user} is trying to log in")
-        return redirect('/search')
-    return render_template('login.html')
+        if valid:
+            return redirect('/search')
+        else:
+            error = f"Password is incorrect for {user}. Please try again."
+    return render_template('login.html', error=error)
 
 @app.route('/search')
 def search_page():

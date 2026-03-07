@@ -8,7 +8,9 @@
     <div class = "login-container">
         <h1> Recipe Portal</h1>
         <p>Login to track your favorite ingredients!</p>
-
+        {% if error %}
+            <p class="error-msg">{{ error }}</p>
+        {% endif %}
         <form action="/login" method="POST">
             <div class="input-group">
                 <label>Username</label>
