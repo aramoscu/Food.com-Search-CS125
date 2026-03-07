@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title> {{ recipe[0] }} </title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='results.css') }}">
+</head>
+<body class="detail-body">
+    <div class="detail-container">
+        <a href="javascript:history.back()" class="back-link">← Back to Search</a>
+        <div class="header-section">
+            <h1> {{ recipe[0] }} </h1>
+            <p class="rating">Rating: {{ recipe[7] or 'No rating' }} ⭐ | {{ recipe[2] }} mins</p>
+        </div>
+
+        <div class="content-grid">
+            <div class="ingredients-list">
+                <h3>Ingredients</h3>
+                <ul>
+                    {% for ing in ingredients %}
+                        <li>{{ ing }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="instructions">
+                <h3>About this Recipe</h3>
+                <p><i>{{ recipe[1] }}</i></p>
+
+                <h3>Steps</h3>
+                <ol>
+                    {% for step in steps %}
+                        <li> {{ step }} </li>
+                    {% endfor %}
+                </ol>
+            </div>
+        </div>
+        
+        <div class="nutrition-footer">
+            <p>Nutrition: {{ recipe[3] }} cals | {{ recipe[4] }}g Protein | {{ recipe[5] }}g Sugar</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Recipe Search</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='results.css') }}">
+</head>
+<h1>Search for Recipes</h1>
+<div class="container">
+    <form action="/search" method="GET">
+        <div class = "options">
+            <h2> Options </h2>
+            <label>Ingredients:</label>
+            <input type="text" name="q" value="{{ last_query }}">
+            <br>
+            <br>
+            <label>Min Protein:</label>
+            <input type="number" name="min_protein" step="1", value="{{ last_protein }}">
+            <br>
+            <br>
+            <label>Max Calories:</label>
+            <input type="number" name="max_calories" step="1", value="{{ last_calories }}">
+            <br>
+            <br>
+            <label>Max Sugar:</label>
+            <input type="number" name="max_sugar" step="1", value="{{ last_sugar }}">
+            <br>
+            <br>
+            <label>Max Sodium:</label>
+            <input type="number" name="max_sodium" step="1", value="{{ last_sodium }}">
+            <br>
+            <br>
+            <label>Sort By:</label>
+            <select name="preference">
+                <option value="">Default (Rating)</option>
+                <option value="high_protein" {% if last_pref == 'high_protein' %} selected {% endif %}>High Protein</option>
+                <option value="low_calorie" {% if last_pref == 'low_calorie' %} selected {% endif %}>Low Calorie</option>
+                <option value="quick" {% if last_pref == 'quick' %} selected {% endif %}>Quickest</option>
+            </select>
+            <br>
+            <br>
+            <button style="align-items: center;" type="submit">Search</button>
+        </div>
+    </form>
+
+    <hr>
+
+    <div class="results">
+        <h2>Results</h2>
+        {% for r in recipes %}
+            <a href="/recipe/{{ r[0] }}" class="recipe-link">
+                <div class="recipe-card">
+                    <h3>{{ r[1] }} ({{ r[7] }}⭐)</h3>
+                    <p class="stats">
+                        {{ r[2] }} mins | {{ r[3] }}g Protein | {{ r[4] }} Calories
+                    </p>
+                </div>
+            </a>
+        {% else %}
+            <p>No recipes found. Try searching for something else!</p>
+        {% endfor %}
+    </div>
+</div>
+</body>
+</html>
