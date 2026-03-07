@@ -68,7 +68,7 @@ def build():
         CREATE TABLE recipes (
             id INTEGER PRIMARY KEY,
             name TEXT,
-            ingredients TEXT,
+            description TEXT,
             minutes INTEGER,
             calories REAL,
             total_fat REAL,
@@ -80,6 +80,23 @@ def build():
             avg_rating REAL
         );
     """)
+    
+    cur.execute("""
+        CREATE TABLE recipe_ingredients (
+            recipe_id INTEGER,
+            ingredient_name TEXT,
+            FOREIGN KEY(recipe_id) references recipes(id)
+        );
+    """)
+
+    cur.execute("""
+        CREATE TABLE recipe_steps (
+            recipe_id INTEGER,
+            step_order INTEGER,
+            step_text TEXT,
+            FOREIGN KEY(recipe_id) references recipes(id)
+        );
+    """)
 
     cur.execute("""
         CREATE TABLE postings (
@@ -89,6 +106,8 @@ def build():
     """)
     cur.execute("CREATE INDEX idx_postings_term ON postings(term);")
     cur.execute("CREATE INDEX idx_postings_term_doc ON postings(term, docid);")
+    cur.execute("CREATE INDEX idx_ingredients_rid ON recipe_ingredients(recipe_id);")
+    cur.execute("CREATE INDEX idx_steps_id ON recipe_steps(recipe_id);")
 
     # Optional numeric indexes for faster filters
     cur.execute("CREATE INDEX idx_recipes_protein ON recipes(protein);")
@@ -97,7 +116,7 @@ def build():
 
     # Read only the columns you need.
     # NOTE: "nutrition" is read from CSV but NOT stored raw — only parsed values stored.
-    usecols = ["id", "name", "ingredients", "minutes", "nutrition"]
+    usecols = ["id", "name", "ingredients", "minutes", "nutrition", "steps", "description"]
 
     total_recipes = 0
     total_postings = 0
@@ -107,6 +126,7 @@ def build():
         chunk["id"] = chunk["id"].astype(int)
         chunk["name"] = chunk["name"].fillna("")
         chunk["minutes"] = chunk["minutes"].fillna(0).astype(int)
+        chunk["description"] = chunk["description"].fillna("No description available.")
 
         # Parse nutrition -> 7 numeric cols
         parsed = chunk["nutrition"].apply(parse_nutrition)
@@ -128,37 +148,42 @@ def build():
         chunk["saturated_fat"] = [v[5] for v in vals]
         chunk["carbohydrates"] = [v[6] for v in vals]
 
-        # Insert recipes (avg_rating set to NULL initially, will be updated later)
-        recipe_rows = list(zip(
-            chunk["id"].tolist(),
-            chunk["name"].tolist(),
-            chunk["ingredients"].tolist(),
-            chunk["minutes"].tolist(),
-            chunk["calories"].tolist(),
-            chunk["total_fat"].tolist(),
-            chunk["sugar"].tolist(),
-            chunk["sodium"].tolist(),
-            chunk["protein"].tolist(),
-            chunk["saturated_fat"].tolist(),
-            chunk["carbohydrates"].tolist(),
-        ))
-
-        cur.executemany("""
-            INSERT INTO recipes(
-                id, name, ingredients, minutes,
-                calories, total_fat, sugar, sodium, protein, saturated_fat, carbohydrates
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, recipe_rows)
-
-        # Build postings from name + ingredients
+        recipe_batch = []
+        ing_batch = []
+        step_batch = []
         postings_batch = []
-        for rid, name, ing in zip(chunk["id"], chunk["name"], chunk["ingredients"]):
-            text = f"{name} {ing}"
-            for term in set(tokenize(text)):
-                postings_batch.append((term, int(rid)))
 
-        cur.executemany("INSERT INTO postings(term, docid) VALUES (?, ?)", postings_batch)
+        for i in range(len(chunk)):
+            row = chunk.iloc[i]
+            nutrition = parsed.iloc[i]
+            rid = int(row["id"])
+
+            recipe_batch.append((
+                rid, row["name"], row["description"], int(row["minutes"]),
+                nutrition[0], nutrition[1], nutrition[2], nutrition[3], nutrition[4],
+                nutrition[5], nutrition[6], None
+            ))
+
+            try:
+                raw_ings = ast.literal_eval(row["ingredients"])
+                for ing_name in raw_ings:
+                    ing_batch.append((rid, ing_name))
+                    for term in set(tokenize(ing_name)):
+                        postings_batch.append((term, rid))
+            except:
+                pass
+
+            try:
+                raw_steps = ast.literal_eval(row["steps"])
+                for idx, step_text in enumerate(raw_steps):
+                    step_batch.append((rid, idx, step_text))
+            except:
+                pass
+
+        cur.executemany("INSERT INTO recipes VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", recipe_batch)
+        cur.executemany("INSERT INTO recipe_ingredients VALUES (?,?)", ing_batch)
+        cur.executemany("INSERT INTO recipe_steps VALUES (?,?,?)", step_batch)
+        cur.executemany("INSERT INTO postings VALUES (?,?)", postings_batch)
 
         conn.commit()
         total_recipes += len(chunk)
@@ -173,7 +198,7 @@ def build():
         # Filter out 0 ratings (often means unrated)
         interactions_df = interactions_df[interactions_df["rating"] > 0]
         # Group by recipe_id and compute mean rating
-        avg_ratings = interactions_df.groupby("recipe_id")["rating"].mean().reset_index()
+        avg_ratings = interactions_df.groupby("recipe_id")["rating"].mean().round(2).reset_index()
         avg_ratings.columns = ["recipe_id", "avg_rating"]
 
         # Update recipes table with ratings

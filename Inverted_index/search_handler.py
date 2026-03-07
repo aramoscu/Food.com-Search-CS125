@@ -2,7 +2,7 @@
 #
 # Usage examples:
 #   python Inverted_index/search_handler.py
-
+from flask import Flask, render_template, request
 import sqlite3
 
 DB_PATH = "Data/inverted_index.db"
@@ -96,26 +96,26 @@ def search(
     conn.close()
     return rows
 
-def pretty_print(rows):
-    if not rows:
-        print("No results.")
-        return
-    for rid, name, minutes, protein, calories, sugar, sodium, rating in rows:
-        rating_str = f"★{rating:.1f}" if rating else "☆ N/A"
-        print(f"{rating_str} | {minutes}min | {protein:.1f}g protein | {calories:.0f} cal | sugar {sugar:.1f}g | sodium {sodium:.1f}mg | {name}")
+# def pretty_print(rows):
+#     if not rows:
+#         print("No results.")
+#         return
+#     for rid, name, minutes, protein, calories, sugar, sodium, rating in rows:
+#         rating_str = f"★{rating:.1f}" if rating else "☆ N/A"
+#         print(f"{rating_str} | {minutes}min | {protein:.1f}g protein | {calories:.0f} cal | sugar {sugar:.1f}g | sodium {sodium:.1f}mg | {name}")
 
-if __name__ == "__main__":
-    # Example 1: basic search
-    rows = search("chicken garlic", limit=10)
-    print("\n--- chicken garlic (no nutrition filter) ---")
-    pretty_print(rows)
+# if __name__ == "__main__":
+#     # Example 1: basic search
+#     rows = search("chicken garlic", min_protein=10, limit=10)
+#     print("\n--- chicken garlic (no nutrition filter) ---")
+#     pretty_print(rows)
 
-    # Example 2: high-protein filter
-    rows = search("chicken garlic", min_protein=25, user_preference="high_protein", limit=10)
-    print("\n--- chicken garlic + protein>=25 ---")
-    pretty_print(rows)
+#     # Example 2: high-protein filter
+#     rows = search("chicken garlic", min_protein=25, user_preference="high_protein", limit=10)
+#     print("\n--- chicken garlic + protein>=25 ---")
+#     pretty_print(rows)
 
-    # Example 3: high-protein + calorie cap
-    rows = search("chicken", min_protein=25, max_calories=600, user_preference="low_calorie", limit=10)
-    print("\n--- chicken + protein>=25 + calories<=600 ---")
-    pretty_print(rows)
+#     # Example 3: high-protein + calorie cap
+#     rows = search("chicken", min_protein=25, max_calories=600, user_preference="low_calorie", limit=10)
+#     print("\n--- chicken + protein>=25 + calories<=600 ---")
+#     pretty_print(rows)
