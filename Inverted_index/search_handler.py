@@ -21,7 +21,7 @@ def search(
     """
     Nutrition filters are applied after matching docids.
     user_preference: "low_sodium", "low_calorie", "low_sugar", "high_protein", "low_carb", "quick"
-    Returns rows: (id, name, minutes, protein, calories, sugar, sodium, avg_rating)
+    Returns rows: (id, name, minutes, protein, calories, sugar, sodium, avg_rating, review_count)
     """
     terms = [t.strip().lower() for t in query.split(",") if t.strip()]
     print(terms)
@@ -78,10 +78,10 @@ def search(
         order_by_sql = "ORDER BY r.minutes ASC, r.avg_rating DESC"
     else:
         # Default: sort by rating only
-        order_by_sql = "ORDER BY r.avg_rating DESC"
+        order_by_sql = "ORDER BY r.avg_rating DESC, r.review_count DESC"
 
     sql = f"""
-        SELECT r.id, r.name, r.minutes, r.protein, r.calories, r.sugar, r.sodium, r.avg_rating
+        SELECT r.id, r.name, r.minutes, r.protein, r.calories, r.sugar, r.sodium, r.avg_rating, r.review_count
         FROM ({base}) m
         JOIN recipes r ON r.id = m.docid
         {filter_sql}

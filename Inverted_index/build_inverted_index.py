@@ -77,7 +77,8 @@ def build():
             protein REAL,
             saturated_fat REAL,
             carbohydrates REAL,
-            avg_rating REAL
+            avg_rating REAL,
+            review_count INTEGER DEFAULT 0
         );
     """)
     
@@ -161,7 +162,7 @@ def build():
             recipe_batch.append((
                 rid, row["name"], row["description"], int(row["minutes"]),
                 nutrition[0], nutrition[1], nutrition[2], nutrition[3], nutrition[4],
-                nutrition[5], nutrition[6], None
+                nutrition[5], nutrition[6], None, 0
             ))
 
             try:
@@ -180,7 +181,7 @@ def build():
             except:
                 pass
 
-        cur.executemany("INSERT INTO recipes VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", recipe_batch)
+        cur.executemany("INSERT INTO recipes VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)", recipe_batch)
         cur.executemany("INSERT INTO recipe_ingredients VALUES (?,?)", ing_batch)
         cur.executemany("INSERT INTO recipe_steps VALUES (?,?,?)", step_batch)
         cur.executemany("INSERT INTO postings VALUES (?,?)", postings_batch)
@@ -198,15 +199,15 @@ def build():
         # Filter out 0 ratings (often means unrated)
         interactions_df = interactions_df[interactions_df["rating"] > 0]
         # Group by recipe_id and compute mean rating
-        avg_ratings = interactions_df.groupby("recipe_id")["rating"].mean().round(2).reset_index()
-        avg_ratings.columns = ["recipe_id", "avg_rating"]
+        stats = interactions_df.groupby("recipe_id")["rating"].agg(['mean', 'count']).reset_index()
+        stats['mean'] = stats['mean'].round(2)
+        
+        update_data = [(float(row["mean"]), int(row["count"]), int(row["recipe_id"]))
+                   for _, row in stats.iterrows()]
 
-        # Update recipes table with ratings
-        rating_updates = [(float(row["avg_rating"]), int(row["recipe_id"]))
-                         for _, row in avg_ratings.iterrows()]
-        cur.executemany("UPDATE recipes SET avg_rating = ? WHERE id = ?", rating_updates)
+        cur.executemany("UPDATE recipes SET avg_rating = ?, review_count = ? WHERE id = ?", update_data)
         conn.commit()
-        print(f"Updated ratings for {len(rating_updates):,} recipes")
+        print(f"Updated ratings for {len(update_data):,} recipes")
     else:
         print(f"Warning: {INTERACTIONS_PATH} not found, skipping ratings")
 
