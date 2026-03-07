@@ -1,9 +1,10 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, session
 from Inverted_index.search_handler import search
 from User_Data.user_methods import *
 import sqlite3
 
 app = Flask(__name__)
+app.secret_key = 'food-com-search-results'
 DB_PATH = "Data/inverted_index.db"
 
 @app.route('/login', methods=["GET", "POST"])
@@ -12,12 +13,13 @@ def login():
     if request.method == "POST":
         user = request.form.get("username")
         password = request.form.get("password")
-        valid = check_user_login(user, password)
+        user_id = check_user_login(user, password)
         print(f"User {user} is trying to log in")
-        if valid:
+        if user_id:
+            session["user_id"] = user_id
             return redirect('/search')
         else:
-            error = f"Password is incorrect for {user}. Please try again."
+            error = f"Password is incorrect for {user}. Please try again with correct password or different username."
     return render_template('login.html', error=error)
 
 @app.route('/search')
@@ -71,9 +73,13 @@ def recipe_detail(recipe_id):
     steps = [row[0] for row in cursor.fetchall()]
     conn.close()
 
+    user_id = session.get("user_id")
+    if not user_id:
+        redirect("/login")
     if not recipe:
         return "Recipe not found", 404
     
+    add_user_interaction(user_id, recipe_id)
     return render_template('detail.html', recipe=recipe,
                            ingredients=ingredients, steps=steps)
 
