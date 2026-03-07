@@ -116,3 +116,24 @@ h1 {
     font-weight: bold;
     cursor: pointer;
 }
+
+.top-nav {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+.logout-link {
+    text-decoration: None;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-weight: bold;
+    transition: background 0.3s ease;
+}
+
+.logout-link:hover {
+    background-color: rgba(0, 0, 0, 0.4);
+    color: #f14242;
+}

@@ -6,6 +6,9 @@
     <script src="{{ url_for('static', filename='ItemListFunctions.js') }}" defer></script>
 </head>
 <h1>Search for Recipes</h1>
+<nav class="top-nav">
+    <a href="{{ url_for('logout') }}" class="logout-link">Sign Out</a>
+</nav>
 <div class="container">
     <form action="/search" method="GET">
         <div class = "options">

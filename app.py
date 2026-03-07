@@ -22,8 +22,16 @@ def login():
             error = f"Password is incorrect for {user}. Please try again with correct password or different username."
     return render_template('login.html', error=error)
 
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    session.clear()
+    return redirect('/login')
+
 @app.route('/search')
 def search_page():
+    if 'user_id' not in session:
+        return redirect('/login')
     query = request.args.get('q', '').strip()
     last_min_prot = request.args.get('min_protein')
     last_max_calories = request.args.get('max_calories')
