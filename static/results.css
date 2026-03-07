@@ -81,3 +81,38 @@ h1 {
     font-size: 0.9em;
     color: #666;
 }
+
+.ingredient-manager {
+    margin-bottom: 20px;
+}
+
+.input-row {
+    display: flex;
+    gap: 5px;
+}
+
+#ing-list {
+    padding: 0;
+    list-style: None;
+    margin-top: 10px;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.ing-item {
+    display: flex;
+    justify-content: space-between;
+    background: #e8f5e9;
+    padding: 5px 10px;
+    margin-bottom: 4px;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.del-btn {
+    background: None;
+    border: None;
+    color: #ff4d4d;
+    font-weight: bold;
+    cursor: pointer;
+}

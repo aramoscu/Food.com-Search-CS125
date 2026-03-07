@@ -168,8 +168,8 @@ def build():
                 raw_ings = ast.literal_eval(row["ingredients"])
                 for ing_name in raw_ings:
                     ing_batch.append((rid, ing_name))
-                    for term in set(tokenize(ing_name)):
-                        postings_batch.append((term, rid))
+                    clean_ing = re.sub(r'\s+', ' ', ing_name.lower().strip())
+                    postings_batch.append((clean_ing, rid))
             except:
                 pass
 

@@ -3,6 +3,7 @@
 <head>
     <title>Recipe Search</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='results.css') }}">
+    <script src="{{ url_for('static', filename='ItemListFunctions.js') }}" defer></script>
 </head>
 <h1>Search for Recipes</h1>
 <div class="container">
@@ -10,7 +11,14 @@
         <div class = "options">
             <h2> Options </h2>
             <label>Ingredients:</label>
-            <input type="text" name="q" value="{{ last_query }}">
+            <div class="ingredient-manager">
+                <div class="input-row">
+                    <input type="text" id="ing-input" placeholder="e.g. Garlic">
+                    <button type="button" onclick="addIngredient()">Add</button>
+                </div>
+                <input type="hidden" name="q" id="hidden-q" value="{{ last_query }}">
+                <ul id="ing-list"></ul>
+            </div>
             <br>
             <br>
             <label>Min Protein:</label>

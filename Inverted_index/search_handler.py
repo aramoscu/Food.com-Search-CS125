@@ -19,13 +19,12 @@ def search(
     user_preference: str | None = None,
 ):
     """
-    AND-style query over tokens in `query`:
-      query="chicken garlic" means docs containing BOTH tokens.
     Nutrition filters are applied after matching docids.
     user_preference: "low_sodium", "low_calorie", "low_sugar", "high_protein", "low_carb", "quick"
     Returns rows: (id, name, minutes, protein, calories, sugar, sodium, avg_rating)
     """
-    terms = [t.strip().lower() for t in query.split() if t.strip()]
+    terms = [t.strip().lower() for t in query.split(",") if t.strip()]
+    print(terms)
     if not terms:
         return []
 
