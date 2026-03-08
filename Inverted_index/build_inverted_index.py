@@ -3,9 +3,9 @@ import re
 import ast
 import sqlite3
 import pandas as pd
+from meal_type_classification import add_meal_type_classification
 
 DB_PATH = "Data/inverted_index.db"
-CSV_PATH = "Raw_recipes.csv"   # adjust if needed
 CHUNK_SIZE = 20_000
 
 TOKEN_RE = re.compile(r"[a-z0-9]+")
@@ -70,6 +70,7 @@ def build():
             name TEXT,
             description TEXT,
             minutes INTEGER,
+            meal_type TEXT,
             calories REAL,
             total_fat REAL,
             sugar REAL,
@@ -117,12 +118,12 @@ def build():
 
     # Read only the columns you need.
     # NOTE: "nutrition" is read from CSV but NOT stored raw — only parsed values stored.
-    usecols = ["id", "name", "ingredients", "minutes", "nutrition", "steps", "description"]
+    usecols = ["id", "name", "ingredients", "minutes", "nutrition", "steps", "description", "class"]
 
     total_recipes = 0
     total_postings = 0
-
-    for chunk_i, chunk in enumerate(pd.read_csv(CSV_PATH, usecols=usecols, chunksize=CHUNK_SIZE)):
+    final_path = add_meal_type_classification()
+    for chunk_i, chunk in enumerate(pd.read_csv(final_path, usecols=usecols, chunksize=CHUNK_SIZE)):
         chunk = chunk.dropna(subset=["id", "ingredients", "nutrition"])
         chunk["id"] = chunk["id"].astype(int)
         chunk["name"] = chunk["name"].fillna("")
@@ -160,7 +161,7 @@ def build():
             rid = int(row["id"])
 
             recipe_batch.append((
-                rid, row["name"], row["description"], int(row["minutes"]),
+                rid, row["name"], row["description"], int(row["minutes"]), row["class"],
                 nutrition[0], nutrition[1], nutrition[2], nutrition[3], nutrition[4],
                 nutrition[5], nutrition[6], None, 0
             ))
@@ -181,7 +182,7 @@ def build():
             except:
                 pass
 
-        cur.executemany("INSERT INTO recipes VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)", recipe_batch)
+        cur.executemany("INSERT INTO recipes VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)", recipe_batch)
         cur.executemany("INSERT INTO recipe_ingredients VALUES (?,?)", ing_batch)
         cur.executemany("INSERT INTO recipe_steps VALUES (?,?,?)", step_batch)
         cur.executemany("INSERT INTO postings VALUES (?,?)", postings_batch)
