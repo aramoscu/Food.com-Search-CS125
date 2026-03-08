@@ -137,3 +137,22 @@ h1 {
     background-color: rgba(0, 0, 0, 0.4);
     color: #f14242;
 }
+
+.like-button {
+    background: #f0f0f0;
+    border: 1px solid #ddd;
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.like-button.is-liked {
+    background: #ffebee;
+    border-color: #ffcdd2;
+    color: #e91e63;
+}
+
+.like-button.is-liked .heart {
+    color: #e91e63;
+}

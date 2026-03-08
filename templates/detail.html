@@ -3,12 +3,19 @@
 <head>
     <title> {{ recipe[0] }} </title>
     <link rel="stylesheet" href="{{ url_for('static', filename='results.css') }}">
+    <script src="{{ url_for('static', filename='like.js') }}" defer></script>
 </head>
 <body class="detail-body">
     <div class="detail-container">
         <a href="javascript:history.back()" class="back-link">← Back to Search</a>
         <div class="header-section">
-            <h1> {{ recipe[0] }} </h1>
+            <div class="title-row">
+                <h1> {{ recipe[0] }} </h1>
+                <button id="like-btn" data-recipe-id="{{ recipe_id }}" class="like-button {{ 'is-liked' if user_has_liked else '' }}" onclick="updateLike(event)">
+                    <span class="heart">{{ '❤️' if user_has_liked else '🤍' }}</span>
+                    <span class="text">{{ 'Liked' if user_has_liked else 'Like' }}</span>
+                </button>
+            </div>
             <p class="rating">Rating: {{ recipe[7] or 'No rating' }} ⭐ | {{ recipe[2] }} mins</p>
         </div>
 

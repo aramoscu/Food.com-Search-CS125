@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session
+from flask import Flask, render_template, request, redirect, session, jsonify
 from Inverted_index.search_handler import search
 from User_Data.user_methods import *
 import sqlite3
@@ -6,6 +6,7 @@ import sqlite3
 app = Flask(__name__)
 app.secret_key = 'food-com-search-results'
 DB_PATH = "Data/inverted_index.db"
+USER_PATH = "User_Data/user.db"
 
 @app.route('/login', methods=["GET", "POST"])
 def login():
@@ -82,14 +83,33 @@ def recipe_detail(recipe_id):
     conn.close()
 
     user_id = session.get("user_id")
+
+    conn = sqlite3.connect(USER_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT 1 from user_likes
+        WHERE user_id = ? AND recipe_id = ?
+    """, (user_id, recipe_id))
+    user_has_liked = cursor.fetchone() is not None
+    conn.close()
+
     if not user_id:
         redirect("/login")
     if not recipe:
         return "Recipe not found", 404
     
     add_user_interaction(user_id, recipe_id)
-    return render_template('detail.html', recipe=recipe,
-                           ingredients=ingredients, steps=steps)
+    return render_template('detail.html', recipe_id=recipe_id, recipe=recipe,
+                           ingredients=ingredients, steps=steps, user_has_liked=user_has_liked)
+
+@app.route('/like/<int:recipe_id>', methods=["POST"])
+def like_recipe(recipe_id):
+    user_id = session.get("user_id")
+    if not user_id:
+        return redirect('/login')
+    status = add_user_like(user_id, recipe_id)
+    return jsonify({"status": status})
+
 
 if __name__ == "__main__":
     app.run(debug=True)

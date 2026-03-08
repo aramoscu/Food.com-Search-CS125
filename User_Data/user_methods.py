@@ -66,3 +66,31 @@ def add_user_interaction(user_id, recipe_id):
     conn.commit()
     conn.close()
     return
+
+def add_user_like(user_id, recipe_id):
+    conn = sqlite3.connect("User_Data/user.db")
+    cursor = conn.cursor()
+
+    create_table_sql = \
+    """
+    CREATE TABLE IF NOT EXISTS user_likes (
+    user_id INTEGER,
+    recipe_id INTEGER,
+    PRIMARY KEY (user_id, recipe_id)
+    );
+    """
+    cursor.execute(create_table_sql)
+
+    cursor.execute("SELECT 1 FROM user_likes WHERE user_id = ? AND recipe_id = ?", (user_id, recipe_id))
+    liked = cursor.fetchone()
+
+    if liked:
+        cursor.execute("DELETE FROM user_likes WHERE user_id = ? AND recipe_id = ?", (user_id, recipe_id))
+        status = "unliked"
+    else:
+        cursor.execute("INSERT INTO user_likes (user_id, recipe_id) VALUES (?, ?)", (user_id, recipe_id))
+        status = "liked"
+    
+    conn.commit()
+    conn.close()
+    return status
