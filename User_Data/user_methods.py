@@ -1,7 +1,7 @@
 import sqlite3
 
 def check_user_login(username, password):
-    conn = sqlite3.connect("user.db")
+    conn = sqlite3.connect("User_Data/user.db")
     cursor = conn.cursor()
 
     create_table_sql = \
@@ -43,7 +43,7 @@ def check_user_login(username, password):
     return u_id
 
 def add_user_interaction(user_id, recipe_id):
-    conn = sqlite3.connect("user.db")
+    conn = sqlite3.connect("User_Data/user.db")
     cursor = conn.cursor()
 
     create_table_sql = \
