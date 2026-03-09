@@ -31,15 +31,19 @@ h1 {
 }
 
 .recipe-link {
+    background-color: white;
     text-decoration: None;
-    display: block;
-    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 120px;
+    border-radius: 12px;
+    margin: 0 20px 15px 5px;
 }
 
 .recipe-link:hover {
-    background-color: #f9f9f9;
-    cursor: pointer;
-    border: 1px solid #27a567;
+    transform: scale(1.02);
+    background-color: #fcfcfc;
 }
 
 .back-link {
@@ -155,4 +159,40 @@ h1 {
 
 .like-button.is-liked .heart {
     color: #e91e63;
+}
+
+.liked-recipes-link {
+    color: white;
+    text-decoration: None;
+    background-color: rgba(0, 0, 0, 0.2);
+    font-weight: bold;
+    border-radius: 20px;
+    font-size: 20px;
+    padding: 8px 15px;
+    text-align: center;
+}
+
+.liked-recipes-link:hover {
+    background-color: rgba(0, 0, 0, 0.4);
+    color: #3fb763;
+}
+
+.nav {
+    margin-top: 100px;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.heart {
+    font-size: 2rem;
+    transition: transform 0.2s ease;
+    margin-right: 10px;
+}
+
+.recipe-card:hover .heart {
+    transform: scale(1.2);
 }

@@ -7,12 +7,12 @@
 </head>
 <body class="detail-body">
     <div class="detail-container">
-        <a href="javascript:history.back()" class="back-link">← Back to Search</a>
+        <a href="javascript:history.back()" class="back-link">← Go Back</a>
         <div class="header-section">
             <div class="title-row">
                 <h1> {{ recipe[0] }} </h1>
                 <button id="like-btn" data-recipe-id="{{ recipe_id }}" class="like-button {{ 'is-liked' if user_has_liked else '' }}" onclick="updateLike(event)">
-                    <span class="heart">{{ '❤️' if user_has_liked else '🤍' }}</span>
+                    <span class="heart-detail">{{ '❤️' if user_has_liked else '🤍' }}</span>
                     <span class="text">{{ 'Liked' if user_has_liked else 'Like' }}</span>
                 </button>
             </div>

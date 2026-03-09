@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, session, jsonify
-from Inverted_index.search_handler import search
+from Inverted_index.search_handler import *
 from User_Data.user_methods import *
 import sqlite3
 
@@ -29,6 +29,28 @@ def logout():
     session.clear()
     return redirect('/login')
 
+@app.route('/liked_recipes')
+def open_liked():
+    if 'user_id' not in session:
+        return redirect('/login')
+    user_id = session.get('user_id')
+    conn = sqlite3.connect(USER_PATH)
+    cursor = conn.cursor()
+    
+    cursor.execute(f"ATTACH DATABASE '{DB_PATH}' AS recipe_db")
+    query = \
+    """
+        SELECT r.id, r.name, r.minutes, r.protein, r.calories, r.sugar, r.sodium, r.avg_rating, r.review_count
+        FROM recipe_db.recipes r
+        JOIN user_likes l ON r.id = l.recipe_id
+        WHERE l.user_id = ?
+    """
+    cursor.execute(query, (user_id,))
+    liked_list = cursor.fetchall()
+    conn.close()
+
+    return render_template('liked_recipes.html', recipes=liked_list)
+
 @app.route('/search')
 def search_page():
     if 'user_id' not in session:
@@ -40,6 +62,7 @@ def search_page():
     last_max_sodium = request.args.get('max_sodium')
     pref = request.args.get('preference')
     results = []
+    user_id = session.get("user_id")
     if query:
         results = search(
             query=query,
@@ -49,10 +72,21 @@ def search_page():
             max_sodium=float(last_max_sodium) if last_max_sodium else None,
             user_preference=pref if pref else None
         )
+    liked_recipe_ids = []
+    conn = sqlite3.connect("User_Data/user.db")
+    cursor = conn.cursor()
+    if user_id:
+        cursor.execute("""
+        SELECT recipe_id
+        FROM user_likes
+        WHERE user_id = ?
+        """, (user_id,))
+        rows = cursor.fetchall()
+        liked_recipe_ids = [row[0] for row in rows]
     return render_template('results.html', recipes=results,
                            last_query=query, last_protein=last_min_prot,
                            last_calories=last_max_calories, last_sugar=last_max_sugar,
-                           last_sodium=last_max_sodium, last_pref=pref)
+                           last_sodium=last_max_sodium, last_pref=pref, liked_recipe_ids=liked_recipe_ids)
 
 @app.route('/recipe/<int:recipe_id>')
 def recipe_detail(recipe_id):

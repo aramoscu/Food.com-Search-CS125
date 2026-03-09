@@ -1,0 +1,45 @@
+body {
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #449fca;
+    font-family: 'Segoe UI', Tahome, Geneve, Verdana, sans-serif;
+}
+
+h1 {
+    text-align: center;
+}
+
+.back-link {
+    display: inline-block;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    margin-left: 10px;
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.recipe-link {
+    background-color: white;
+    text-decoration: None;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 120px;
+    border-radius: 12px;
+    margin: 0 20px 15px 20px;
+}
+
+.recipe-link:hover {
+    transform: scale(1.02);
+    background-color: #fcfcfc;
+}
+
+.empty-msg {
+    margin-left: 20px;
+    font-size: 20px;
+    font-weight: bold;
+    color: white;
+}

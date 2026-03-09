@@ -50,6 +50,11 @@
             <br>
             <br>
             <button style="align-items: center;" type="submit">Search</button>
+            <br>
+            <br>
+            <nav class="nav">
+                <a href="/liked_recipes" class="liked-recipes-link">Liked Recipes</a>
+            </nav>
         </div>
     </form>
 
@@ -60,7 +65,10 @@
         {% for r in recipes %}
             <a href="/recipe/{{ r[0] }}" class="recipe-link">
                 <div class="recipe-card">
-                    <h3>{{ r[1] }} ({{ r[7] }}⭐ {{ r[8] }} Reviews)</h3>
+                    <div class="card-header">
+                        <h3>{{ r[1] }} ({{ r[7] }}⭐ {{ r[8] }} Reviews)</h3>
+                        <span class="heart">{{ '❤️' if r[0] in liked_recipe_ids else '🤍' }}</span>
+                    </div>
                     <p class="stats">
                         {{ r[2] }} mins | {{ r[3] }}g Protein | {{ r[4] }} Calories
                     </p>
@@ -71,5 +79,15 @@
         {% endfor %}
     </div>
 </div>
+<script>
+    window.addEventListener("pageshow", function (event) {
+        var historyTraversal = event.persisted || 
+                               (typeof window.performance != "undefined" && 
+                                window.performance.navigation.type === 2);
+        if (historyTraversal) {
+            window.location.reload();
+        }
+    });
+</script>
 </body>
 </html>
