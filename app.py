@@ -72,6 +72,9 @@ def search_page():
             max_sodium=float(last_max_sodium) if last_max_sodium else None,
             user_preference=pref if pref else None
         )
+    else:
+        # This would be recipes that are returned with no query
+        results = default_results()
     liked_recipe_ids = []
     conn = sqlite3.connect("User_Data/user.db")
     cursor = conn.cursor()
