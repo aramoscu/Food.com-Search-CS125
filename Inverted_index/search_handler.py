@@ -25,7 +25,6 @@ def search(
     Returns rows: (id, name, minutes, protein, calories, sugar, sodium, avg_rating, review_count)
     """
     terms = [t.strip().lower() for t in query.split(",") if t.strip()]
-    print(terms)
     if not terms:
         return []
 
@@ -90,7 +89,6 @@ def search(
         LIMIT ?
     """
     params.append(int(limit))
-
     cur.execute(sql, params)
     rows = cur.fetchall()
     conn.close()
@@ -122,19 +120,19 @@ def default_results(limit=10, min_protein=None,
     
     is_filtering = any([min_protein, max_calories, max_sugar, max_sodium])
     if user_preference == "low_sodium":
-        order_by_sql = "ORDER BY r.sodium ASC, r.avg_rating DESC"
+        order_by_sql = "ORDER BY sodium ASC, avg_rating DESC"
     elif user_preference == "low_calorie":
-        order_by_sql = "ORDER BY r.calories ASC, r.avg_rating DESC"
+        order_by_sql = "ORDER BY calories ASC, avg_rating DESC"
     elif user_preference == "low_sugar":
-        order_by_sql = "ORDER BY r.sugar ASC, r.avg_rating DESC"
+        order_by_sql = "ORDER BY sugar ASC, avg_rating DESC"
     elif user_preference == "high_protein":
-        order_by_sql = "ORDER BY r.protein DESC, r.avg_rating DESC"
+        order_by_sql = "ORDER BY protein DESC, avg_rating DESC"
     elif user_preference == "low_carb":
-        order_by_sql = "ORDER BY r.carbohydrates ASC, r.avg_rating DESC"
+        order_by_sql = "ORDER BY carbohydrates ASC, avg_rating DESC"
     elif user_preference == "quick":
-        order_by_sql = "ORDER BY r.minutes ASC, r.avg_rating DESC"
+        order_by_sql = "ORDER BY minutes ASC, avg_rating DESC"
     elif is_filtering:
-        order_by_sql = "ORDER BY r.avg_rating DESC, r.review_count DESC"
+        order_by_sql = "ORDER BY avg_rating DESC, review_count DESC"
     else:
         order_by_sql = "ORDER BY RANDOM()"
 

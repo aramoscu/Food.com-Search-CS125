@@ -45,6 +45,8 @@
                 <option value="">Default (Rating)</option>
                 <option value="high_protein" {% if last_pref == 'high_protein' %} selected {% endif %}>High Protein</option>
                 <option value="low_calorie" {% if last_pref == 'low_calorie' %} selected {% endif %}>Low Calorie</option>
+                <option value="low_sodium" {% if last_pref == 'low_sodium' %} selected {% endif %}>Low Sodium</option>
+                <option value="low_sugar" {% if last_pref == 'low_sugar' %} selected {% endif %}>Low Sugar</option>
                 <option value="quick" {% if last_pref == 'quick' %} selected {% endif %}>Quickest</option>
             </select>
             <br>
@@ -70,7 +72,7 @@
                         <span class="heart">{{ '❤️' if r[0] in liked_recipe_ids else '🤍' }}</span>
                     </div>
                     <p class="stats">
-                        {{ r[2] }} mins | {{ r[3] }}g Protein | {{ r[4] }} Calories
+                        {{ r[2] }} mins | {{ r[3] }}g Protein | {{ r[4] }} Calories | {{ r[5] }}g Sugar | {{ r[6] }}mg Sodium
                     </p>
                 </div>
             </a>

@@ -74,7 +74,11 @@ def search_page():
         )
     else:
         # This would be recipes that are returned with no query
-        results = default_results()
+        results = default_results(min_protein=float(last_min_prot) if last_min_prot else None,
+                                  max_calories=float(last_max_calories) if last_max_calories else None,
+                                  max_sugar=float(last_max_sugar) if last_max_sugar else None,
+                                  max_sodium=float(last_max_sodium) if last_max_sodium else None,
+                                  user_preference=pref if pref else None)
     liked_recipe_ids = []
     conn = sqlite3.connect("User_Data/user.db")
     cursor = conn.cursor()
