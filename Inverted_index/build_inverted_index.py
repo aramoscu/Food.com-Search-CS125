@@ -101,15 +101,25 @@ def build():
     """)
 
     cur.execute("""
+        CREATE TABLE recipe_tags (
+            recipe_id INTEGER,
+            tag TEXT,
+            UNIQUE(recipe_id, tag),
+            FOREIGN KEY(recipe_id) references recipes(id)
+        );
+    """)
+
+    cur.execute("""
         CREATE TABLE postings (
             term TEXT NOT NULL,
             docid INTEGER NOT NULL
         );
     """)
-    cur.execute("CREATE INDEX idx_postings_term ON postings(term);")
+    # cur.execute("CREATE INDEX idx_postings_term ON postings(term);")
     cur.execute("CREATE INDEX idx_postings_term_doc ON postings(term, docid);")
     cur.execute("CREATE INDEX idx_ingredients_rid ON recipe_ingredients(recipe_id);")
     cur.execute("CREATE INDEX idx_steps_id ON recipe_steps(recipe_id);")
+    cur.execute("CREATE INDEX idx_tags_rid ON recipe_tags(recipe_id)")
 
     # Optional numeric indexes for faster filters
     cur.execute("CREATE INDEX idx_recipes_protein ON recipes(protein);")
@@ -118,7 +128,7 @@ def build():
 
     # Read only the columns you need.
     # NOTE: "nutrition" is read from CSV but NOT stored raw — only parsed values stored.
-    usecols = ["id", "name", "ingredients", "minutes", "nutrition", "steps", "description", "class"]
+    usecols = ["id", "name", "ingredients", "minutes", "nutrition", "steps", "description", "class", "tags"]
 
     total_recipes = 0
     total_postings = 0
@@ -128,6 +138,7 @@ def build():
         chunk["id"] = chunk["id"].astype(int)
         chunk["name"] = chunk["name"].fillna("")
         chunk["minutes"] = chunk["minutes"].fillna(0).astype(int)
+        chunk["tags"] = chunk["tags"].fillna("").astype(str)
         chunk["description"] = chunk["description"].fillna("No description available.")
 
         # Parse nutrition -> 7 numeric cols
@@ -153,6 +164,7 @@ def build():
         recipe_batch = []
         ing_batch = []
         step_batch = []
+        tags_batch = []
         postings_batch = []
 
         for i in range(len(chunk)):
@@ -182,9 +194,17 @@ def build():
             except:
                 pass
 
+            try:
+                raw_tags = ast.literal_eval(row["tags"])
+                for tag in raw_tags:
+                    tags_batch.append((rid, tag))
+            except:
+                pass
+
         cur.executemany("INSERT INTO recipes VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)", recipe_batch)
         cur.executemany("INSERT INTO recipe_ingredients VALUES (?,?)", ing_batch)
         cur.executemany("INSERT INTO recipe_steps VALUES (?,?,?)", step_batch)
+        cur.executemany("INSERT INTO recipe_tags VALUES (?,?)", tags_batch)
         cur.executemany("INSERT INTO postings VALUES (?,?)", postings_batch)
 
         conn.commit()
