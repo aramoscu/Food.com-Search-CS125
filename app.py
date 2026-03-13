@@ -64,21 +64,21 @@ def search_page():
     results = []
     user_id = session.get("user_id")
     if query:
-        results = search(
+        results = get_candidate_rows_for_user(
             query=query,
+            user_id=user_id,
             min_protein=float(last_min_prot) if last_min_prot else None,
             max_calories=float(last_max_calories) if last_max_calories else None,
             max_sugar=float(last_max_sugar) if last_max_sugar else None,
-            max_sodium=float(last_max_sodium) if last_max_sodium else None,
-            user_preference=pref if pref else None
+            max_sodium=float(last_max_sodium) if last_max_sodium else None
         )
     else:
         # This would be recipes that are returned with no query
-        results = default_results(min_protein=float(last_min_prot) if last_min_prot else None,
-                                  max_calories=float(last_max_calories) if last_max_calories else None,
-                                  max_sugar=float(last_max_sugar) if last_max_sugar else None,
-                                  max_sodium=float(last_max_sodium) if last_max_sodium else None,
-                                  user_preference=pref if pref else None)
+        results = get_personalized_recommendations(user_id=user_id,
+                                    min_protein=float(last_min_prot) if last_min_prot else None,
+                                    max_calories=float(last_max_calories) if last_max_calories else None,
+                                    max_sugar=float(last_max_sugar) if last_max_sugar else None,
+                                    max_sodium=float(last_max_sodium) if last_max_sodium else None)
     liked_recipe_ids = []
     conn = sqlite3.connect("User_Data/user.db")
     cursor = conn.cursor()
