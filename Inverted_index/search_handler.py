@@ -1,5 +1,5 @@
 import sqlite3
-from logic.ranking import calculate_score_for_recipes, get_user_profile
+from logic.ranking import calculate_score_for_recipes, get_user_profile, get_recipe_info_for_batch
 
 DB_PATH = "Data/inverted_index.db"
 
@@ -19,7 +19,6 @@ def build_nutrition_filter(min_protein, max_calories, max_sugar, max_sodium):
         where_clauses.append("r.sodium <= ?")
         params.append(max_sodium)
     filter_sql = (" WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
-    print(filter_sql)
     return filter_sql, params
 
 def get_candidate_rows_for_user(query: str, user_id: int,
@@ -37,6 +36,7 @@ def get_candidate_rows_for_user(query: str, user_id: int,
     cursor = conn.cursor()
     
     placeholders = ",".join("?" for _ in terms)
+    user_profile = get_user_profile(user_id)
 
     base = f"""
         SELECT DISTINCT p.docid
@@ -49,11 +49,14 @@ def get_candidate_rows_for_user(query: str, user_id: int,
         FROM ({base}) m
         JOIN recipes r ON r.id = m.docid
         {filter_sql}
+        ORDER BY (avg_rating * review_count) * RANDOM() DESC
+        LIMIT 10000
     """
     cursor.execute(sql, terms + filter_params)
     rows = cursor.fetchall() # These are candidate recipes that contain 1 or more of the requested ingredients
     conn.close()
-    rows = calculate_score_for_recipes(rows, user_id, terms)
+    batch_info = get_recipe_info_for_batch([r[0] for r in rows])
+    rows = calculate_score_for_recipes(rows, batch_info, user_profile, terms)
     return rows[:limit]
 
 def get_personalized_recommendations(user_id: int,
@@ -81,15 +84,18 @@ def get_personalized_recommendations(user_id: int,
         placeholders = ",".join("?" for _ in tags)
         tag_clause = (" AND " if filter_sql else " WHERE ") + f"t.tag IN ({placeholders})"
         sql = f"""
-            SELECT DISTINCT r.id, r.name, r.minutes, r.protein, r.calories, r.sugar, r.sodium, r.avg_rating, r.review_count, r.meal_type
-            FROM recipe_tags t
-            JOIN recipes r ON r.id = t.recipe_id
-            {filter_sql}
-            {tag_clause}
+            SELECT r.id, r.name, r.minutes, r.protein, r.calories, r.sugar, r.sodium, r.avg_rating, r.review_count, r.meal_type
+            FROM recipes r
+            WHERE id IN (
+                SELECT recipe_id FROM recipe_tags WHERE tag IN ({placeholders})
+            )
+            {filter_sql.replace('WHERE', 'AND')} 
+            ORDER BY (r.avg_rating * r.review_count) * RANDOM() DESC
+            LIMIT 10000
         """
-        cursor.execute(sql, filter_params + tags)
+        cursor.execute(sql, tags + filter_params)
     rows = cursor.fetchall()
     conn.close()
-
-    scored_results = calculate_score_for_recipes(rows, user_id, search_ingredients=None)
+    batch_info = get_recipe_info_for_batch([r[0] for r in rows])
+    scored_results = calculate_score_for_recipes(rows, batch_info, user_profile, search_ingredients=None)
     return scored_results[:limit]

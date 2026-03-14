@@ -60,7 +60,7 @@ def search_page():
     last_max_calories = request.args.get('max_calories')
     last_max_sugar = request.args.get('max_sugar')
     last_max_sodium = request.args.get('max_sodium')
-    pref = request.args.get('preference')
+    # pref = request.args.get('preference')
     results = []
     user_id = session.get("user_id")
     if query:
@@ -93,7 +93,7 @@ def search_page():
     return render_template('results.html', recipes=results,
                            last_query=query, last_protein=last_min_prot,
                            last_calories=last_max_calories, last_sugar=last_max_sugar,
-                           last_sodium=last_max_sodium, last_pref=pref, liked_recipe_ids=liked_recipe_ids)
+                           last_sodium=last_max_sodium, liked_recipe_ids=liked_recipe_ids)
 
 @app.route('/recipe/<int:recipe_id>')
 def recipe_detail(recipe_id):

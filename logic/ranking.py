@@ -105,10 +105,8 @@ def get_user_profile(user_id):
     conn2.close()
     return user_profile
 
-def calculate_score_for_recipes(recipes: list, user_id: int, search_ingredients: list = None):
-    user_profile = get_user_profile(user_id)
+def calculate_score_for_recipes(recipes: list, batch_info: dict, user_profile: dict, search_ingredients: list = None):
     recipe_ids = [recipe[0] for recipe in recipes]
-    batch_info = get_recipe_info_for_batch(recipe_ids)
     final_list = []
     for recipe in recipes:
         rid = recipe[0]
@@ -117,7 +115,6 @@ def calculate_score_for_recipes(recipes: list, user_id: int, search_ingredients:
         final_list.append((recipe, score))
     # sort final_list by score given and then return
     final_list.sort(key=lambda x: x[1], reverse=True)
-    print(final_list[:10])
     final_list = [item[0] for item in final_list]
     return final_list
 

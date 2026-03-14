@@ -119,6 +119,7 @@ def build():
     cur.execute("CREATE INDEX idx_postings_term_doc ON postings(term, docid);")
     cur.execute("CREATE INDEX idx_ingredients_rid ON recipe_ingredients(recipe_id);")
     cur.execute("CREATE INDEX idx_steps_id ON recipe_steps(recipe_id);")
+    cur.execute("CREATE INDEX idx_tags_tag_rid ON recipe_tags(tag, recipe_id);")
     cur.execute("CREATE INDEX idx_tags_rid ON recipe_tags(recipe_id)")
 
     # Optional numeric indexes for faster filters

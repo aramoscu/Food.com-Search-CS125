@@ -40,17 +40,6 @@
             <input type="number" name="max_sodium" step="1", value="{{ last_sodium }}">
             <br>
             <br>
-            <label>Sort By:</label>
-            <select name="preference">
-                <option value="">Default (Rating)</option>
-                <option value="high_protein" {% if last_pref == 'high_protein' %} selected {% endif %}>High Protein</option>
-                <option value="low_calorie" {% if last_pref == 'low_calorie' %} selected {% endif %}>Low Calorie</option>
-                <option value="low_sodium" {% if last_pref == 'low_sodium' %} selected {% endif %}>Low Sodium</option>
-                <option value="low_sugar" {% if last_pref == 'low_sugar' %} selected {% endif %}>Low Sugar</option>
-                <option value="quick" {% if last_pref == 'quick' %} selected {% endif %}>Quickest</option>
-            </select>
-            <br>
-            <br>
             <button style="align-items: center;" type="submit">Search</button>
             <br>
             <br>
