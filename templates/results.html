@@ -9,6 +9,9 @@
 <nav class="top-nav">
     <a href="{{ url_for('logout') }}" class="logout-link">Sign Out</a>
 </nav>
+<div class="time-indicator">
+    {{ promoted }}
+</div>
 <div class="container">
     <form action="/search" method="GET">
         <div class = "options">

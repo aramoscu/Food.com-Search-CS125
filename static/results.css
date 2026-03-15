@@ -196,3 +196,15 @@ h1 {
 .recipe-card:hover .heart {
     transform: scale(1.2);
 }
+
+.time-indicator {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: black;
+    margin-left: 15px;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+}

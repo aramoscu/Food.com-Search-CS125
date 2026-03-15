@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, redirect, session, jsonify
 from Inverted_index.search_handler import *
 from User_Data.user_methods import *
+from logic.ranking import time_of_meal
+from datetime import datetime
 import sqlite3
 
 app = Flask(__name__)
@@ -53,6 +55,8 @@ def open_liked():
 
 @app.route('/search')
 def search_page():
+    current_time = datetime.now().time()
+    current_meal_supported = f"It's time for {time_of_meal(current_time).capitalize()}"
     if 'user_id' not in session:
         return redirect('/login')
     query = request.args.get('q', '').strip()
@@ -93,7 +97,7 @@ def search_page():
     return render_template('results.html', recipes=results,
                            last_query=query, last_protein=last_min_prot,
                            last_calories=last_max_calories, last_sugar=last_max_sugar,
-                           last_sodium=last_max_sodium, liked_recipe_ids=liked_recipe_ids)
+                           last_sodium=last_max_sodium, liked_recipe_ids=liked_recipe_ids, promoted=current_meal_supported)
 
 @app.route('/recipe/<int:recipe_id>')
 def recipe_detail(recipe_id):
