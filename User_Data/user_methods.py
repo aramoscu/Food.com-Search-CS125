@@ -4,15 +4,28 @@ def check_user_login(username, password):
     conn = sqlite3.connect("User_Data/user.db")
     cursor = conn.cursor()
 
-    create_table_sql = \
-    """
+    cursor.execute("""
     CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL
     );
-    """
-    cursor.execute(create_table_sql)
+    """)
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS user_likes (
+            user_id INTEGER, recipe_id INTEGER,
+            PRIMARY KEY (user_id, recipe_id)
+        )
+    """)
+
+    cursor.execute("""
+            CREATE TABLE IF NOT EXISTS user_interaction (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER, recipe_id INTEGER,
+                clicked_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+    """)
     
     check_user_sql = f"""
     SELECT *
