@@ -47,4 +47,16 @@ function restoreIngredients() {
     }
 }
 
+document.addEventListener('DOMContentLoaded', function() {
+    const input = document.getElementById('ing-input');
+    if (input) {
+        input.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                addIngredient();
+            }
+        });
+    }
+});
+
 window.onload = restoreIngredients;
